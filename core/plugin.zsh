@@ -55,7 +55,6 @@ kotik::plugin::validate_config() {
     done < "$config"
 }
 
-# Auto-load enabled plugins from config  
 if [[ -n "${KOTIK_OPT[plugins]}" ]]; then
     for p in ${${KOTIK_OPT[plugins]}// / }; do
         kotik::plugin::load "$p"
