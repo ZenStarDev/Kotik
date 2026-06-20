@@ -5,23 +5,7 @@ Modular zsh prompt framework. Async-safe, segment-based, themeable.
 ## Install
 
 ```sh
-# Local
-bash bin/install.sh
-```
----
-```sh
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/ZenStarDev/Kotik/main/bin/install.sh)"
-```
-
-## Management
-
-```sh
-# Update
-KOTIK_UPDATE=1 bash bin/install.sh
-```
-```sh
-# Uninstall
-KOTIK_UNINSTALL=1 bash bin/install.sh
 ```
 
 ## Usage
