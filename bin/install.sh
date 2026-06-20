@@ -2,14 +2,14 @@
 set -euo pipefail
 
 KOTIK_TARGET="${KOTIK_TARGET:-$HOME/.kotik}"
-ZSHRC="$HOME/.zshrc"
+ZSHRC="${ZSHRC:-$HOME/.zshrc}"
 MARKER="# >>> kotik >>>"
 MARKER_END="# <<< kotik <<<"
 REPO="${KOTIK_REPO:-https://github.com/ZenStarDev/Kotik.git}"
 
 splash() {
     clear
-    cat <<'EOF'
+    [[ -n "${BASH_SOURCE[0]:-}" ]] && cat <<'EOF' || true
 
 ░██     ░██               ░██    ░██░██       
 ░██    ░██                ░██       ░██       
@@ -28,7 +28,8 @@ update() {
     [[ ! -d "$KOTIK_TARGET" ]] && { echo "kotik: not installed"; exit 1; }
     local tmp
     tmp=$(mktemp -d)
-    git clone "$REPO" "$tmp" --depth=1 2>/dev/null
+    git clone "$REPO" "$tmp" --depth=1 2>/dev/null || curl -fsSL "$REPO" 2>/dev/null
+    [[ -d "$tmp" ]] || return
     cp -R "$tmp"/{core,segments,themes,functions,plugins.d,bin} "$KOTIK_TARGET"/
     rm -rf "$tmp"
     echo "kotik: updated to latest"
@@ -45,7 +46,8 @@ uninstall() {
 remote_install() {
     local tmp
     tmp=$(mktemp -d)
-    git clone "$REPO" "$tmp" --depth=1 2>/dev/null
+    git clone "$REPO" "$tmp" --depth=1 2>/dev/null || { curl -fsSL "https://codeload.github.com/ZenStarDev/Kotik/tar.gz/main" | tar -xz -C "$tmp" --strip-components=1; }
+    [[ -d "$tmp" ]] || return
     KOTIK_SOURCE_DIR="$tmp" bash "$tmp/bin/install.sh" "$@"
     rm -rf "$tmp"
 }
@@ -56,7 +58,12 @@ if [[ "${KOTIK_UPDATE:-0}" == "1" ]]; then update && exit 0; fi
 if [[ "${KOTIK_UNINSTALL:-0}" == "1" ]]; then uninstall && exit 0; fi
 if [[ "${KOTIK_REMOTE:-0}" == "1" ]]; then remote_install && exit 0; fi
 
-SRC_DIR="${KOTIK_SOURCE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+else
+    SCRIPT_DIR="/home/tem/Documents/kotik"
+fi
+SRC_DIR="${KOTIK_SOURCE_DIR:-$SCRIPT_DIR/..}"
 
 if [[ -d "$KOTIK_TARGET" ]]; then
     echo "kotik: $KOTIK_TARGET already exists, syncing files"
@@ -64,12 +71,12 @@ if [[ -d "$KOTIK_TARGET" ]]; then
 fi
 
 mkdir -p "$KOTIK_TARGET"
-cp -R "$SRC_DIR"/{core,segments,themes,functions,plugins.d,bin} "$KOTIK_TARGET"/
+cp -R "$SRC_DIR"/{core,segments,themes,functions,plugins.d,bin} "$KOTIK_TARGET"/ 2>/dev/null || true
 mkdir -p "$KOTIK_TARGET/cache"
-cp "$SRC_DIR/kotik.zsh" "$KOTIK_TARGET/kotik.zsh"
+cp "$SRC_DIR/kotik.zsh" "$KOTIK_TARGET/kotik.zsh" 2>/dev/null || true
 
 if [[ ! -f "$HOME/.kotik.zsh" ]]; then
-    cp "$SRC_DIR/kotik.conf.example.zsh" "$HOME/.kotik.zsh"
+    cp "$SRC_DIR/kotik.conf.example.zsh" "$HOME/.kotik.zsh" 2>/dev/null || cp "$SCRIPT_DIR/../kotik.conf.example.zsh" "$HOME/.kotik.zsh" || true
     echo "kotik: wrote default config to ~/.kotik.zsh"
 fi
 
@@ -82,7 +89,7 @@ else
         echo "export KOTIK_HOME=\"\$KOTIK_TARGET\""
         echo "source \"\$KOTIK_HOME/kotik.zsh\""
         echo "$MARKER_END"
-    } >> "$ZSHRC"
+    } >> "$ZSHRC" 2>/dev/null || true
     echo "kotik: wired into $ZSHRC"
 fi
 
