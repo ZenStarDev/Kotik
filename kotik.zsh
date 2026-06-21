@@ -49,7 +49,7 @@ kotik::init
 kotik::theme::load "${KOTIK_OPT[theme]}"
 
 kotik::help() {
-    cat <<'EOF'
+cat <<'EOF'
 kotik - modular zsh prompt framework
 
 USAGE:
@@ -84,7 +84,8 @@ SEGMENTS:
 Add custom segments to ~/.kotik.zsh:
   kotik::segment::myseg() { ... }
   kotik::segment::register myseg kotik::segment::myseg
-KOTIK_OPT[segments_left]+=" myseg"
+  KOTIK_OPT[segments_left]+=" myseg"
+EOF
 }
 
 kotik::version() {
