@@ -44,14 +44,11 @@ kotik::plugin::status() {
 kotik::plugin::validate_config() {
     local config="$KOTIK_CONFIG"
     [[ -f "$config" ]] || return
+    local valid_opts="theme segments_left segments_right newline compact_path prompt_symbol prompt_symbol_err prompt_vimode duration_threshold git_max_dirty nerd_fonts async plugins"
     while IFS= read -r line; do
-        [[ "$line" =~ 'KOTIK_OPT\[([a-z_]+)\]' ]] && {
-            local opt=${MATCH[1]}
-            case $opt in
-                theme|segments_left|segments_right|newline|compact_path|prompt_symbol|prompt_symbol_err|prompt_vimode|duration_threshold|git_max_dirty|nerd_fonts|async|plugins) ;;
-                *) print -u2 "kotik: unknown option $opt" ;;
-            esac
-        }
+        [[ "$line" =~ 'KOTIK_OPT\[([a-z_]+)\]' ]] || continue
+        local opt="${MATCH[1]}"
+        [[ "$valid_opts" != *$opt* ]] && print -u2 "kotik: unknown option $opt"
     done < "$config"
 }
 
